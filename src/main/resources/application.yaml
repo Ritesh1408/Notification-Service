@@ -27,6 +27,6 @@ spring:
 #      host: localhost
 #      port: 6379
 #
-#jwt:
-#  secret: mysecretkey
-#  expiration: 3600000
+jwt:
+  secret: mysupersecretkeymysupersecretkey123
+  expiration: 3600000

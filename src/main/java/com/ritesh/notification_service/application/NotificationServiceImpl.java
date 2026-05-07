@@ -16,9 +16,7 @@ public class NotificationServiceImpl implements NotificationService {
     private final NotificationRepository notificationRepository;
 
     @Override
-    public Notification createNotification(String userId, Object req) {
-
-        NotificationCreateRequest request = (NotificationCreateRequest) req;
+    public Notification createNotification(String userId, NotificationCreateRequest request) {
 
         Notification notification = Notification.builder()
                 .userId(userId)

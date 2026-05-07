@@ -8,10 +8,10 @@ import lombok.Data;
 @Data
 public class NotificationCreateRequest {
 
-    @NotBlank
+    @NotBlank(message = "Title is required")
     private String title;
 
-    @NotBlank
+    @NotBlank(message = "Message is required")
     private String message;
 
     private NotificationCategory category;
