@@ -3,6 +3,8 @@ package com.ritesh.notification_service.api;
 import com.ritesh.notification_service.application.NotificationService;
 import com.ritesh.notification_service.common.response.ApiResponse;
 import com.ritesh.notification_service.domain.entity.Notification;
+import com.ritesh.notification_service.common.mapper.NotificationMapper;
+import com.ritesh.notification_service.dto.response.NotificationResponse;
 import com.ritesh.notification_service.dto.NotificationCreateRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,22 +18,27 @@ import org.springframework.web.bind.annotation.*;
 public class NotificationController {
 
     private final NotificationService notificationService;
+    private final NotificationMapper notificationMapper;
 
     /**
      * Create Notification
      */
     @PostMapping
-    public ApiResponse<Notification> createNotification(
+    public ApiResponse<NotificationResponse> createNotification(
             @RequestHeader("x-user-id") String userId,
             @Valid @RequestBody NotificationCreateRequest request
     ) {
 
-        Notification notification = notificationService.createNotification(userId, request);
+        Notification notification =
+                notificationService.createNotification(userId, request);
 
-        return ApiResponse.<Notification>builder()
+        NotificationResponse response =
+                notificationMapper.toResponse(notification);
+
+        return ApiResponse.<NotificationResponse>builder()
                 .success(true)
                 .message("Notification created successfully")
-                .data(notification)
+                .data(response)
                 .build();
     }
 
@@ -39,16 +46,20 @@ public class NotificationController {
      * Get User Notifications
      */
     @GetMapping
-    public ApiResponse<List<Notification>> getNotifications(
+    public ApiResponse<List<NotificationResponse>> getNotifications(
             @RequestHeader("x-user-id") String userId
     ) {
 
-        List<Notification> notifications = notificationService.getUserNotifications(userId);
+        List<NotificationResponse> responses =
+                notificationService.getUserNotifications(userId)
+                        .stream()
+                        .map(notificationMapper::toResponse)
+                        .toList();
 
-        return ApiResponse.<List<Notification>>builder()
+        return ApiResponse.<List<NotificationResponse>>builder()
                 .success(true)
                 .message("Notifications fetched successfully")
-                .data(notifications)
+                .data(responses)
                 .build();
     }
 }
