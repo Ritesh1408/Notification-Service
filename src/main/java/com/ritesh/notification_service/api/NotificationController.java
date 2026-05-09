@@ -6,11 +6,12 @@ import com.ritesh.notification_service.domain.entity.Notification;
 import com.ritesh.notification_service.common.mapper.NotificationMapper;
 import com.ritesh.notification_service.dto.response.NotificationResponse;
 import com.ritesh.notification_service.dto.NotificationCreateRequest;
+import com.ritesh.notification_service.infrastructure.redis.NotificationCacheService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-        import java.util.List;
+import java.util.List;
 
 @RestController
 @RequestMapping("/notifications")
@@ -19,6 +20,7 @@ public class NotificationController {
 
     private final NotificationService notificationService;
     private final NotificationMapper notificationMapper;
+    private final NotificationCacheService notificationCacheService;
 
     /**
      * Create Notification
@@ -60,6 +62,21 @@ public class NotificationController {
                 .success(true)
                 .message("Notifications fetched successfully")
                 .data(responses)
+                .build();
+    }
+
+    @GetMapping("/unread-count")
+    public ApiResponse<Long> getUnreadCount(
+            @RequestHeader("x-user-id") String userId
+    ) {
+
+        long unreadCount =
+                notificationCacheService.getUnreadCount(userId);
+
+        return ApiResponse.<Long>builder()
+                .success(true)
+                .message("Unread count fetched successfully")
+                .data(unreadCount)
                 .build();
     }
 }

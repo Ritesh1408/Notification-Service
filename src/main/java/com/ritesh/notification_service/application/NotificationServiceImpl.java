@@ -6,6 +6,8 @@ import com.ritesh.notification_service.dto.NotificationCreateRequest;
 import com.ritesh.notification_service.infrastructure.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import com.ritesh.notification_service.infrastructure.redis.NotificationCacheService;
+
 
 import java.util.List;
 
@@ -14,6 +16,7 @@ import java.util.List;
 public class NotificationServiceImpl implements NotificationService {
 
     private final NotificationRepository notificationRepository;
+    private final NotificationCacheService notificationCacheService;
 
     @Override
     public Notification createNotification(String userId, NotificationCreateRequest request) {
@@ -30,7 +33,14 @@ public class NotificationServiceImpl implements NotificationService {
                 .retryCount(0)
                 .build();
 
-        return notificationRepository.save(notification);
+        Notification savedNotification =
+                notificationRepository.save(notification);
+
+        notificationCacheService.incrementUnreadCount(userId);
+
+        return savedNotification;
+
+//        return notificationRepository.save(notification);
     }
 
     @Override
