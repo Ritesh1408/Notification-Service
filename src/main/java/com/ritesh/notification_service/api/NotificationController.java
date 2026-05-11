@@ -10,7 +10,7 @@ import com.ritesh.notification_service.infrastructure.redis.NotificationCacheSer
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-
+import java.util.UUID;
 import java.util.List;
 
 @RestController
@@ -77,6 +77,25 @@ public class NotificationController {
                 .success(true)
                 .message("Unread count fetched successfully")
                 .data(unreadCount)
+                .build();
+    }
+
+    @PatchMapping("/{id}/read")
+    public ApiResponse<NotificationResponse> markAsRead(
+            @PathVariable UUID id,
+            @RequestHeader("x-user-id") String userId
+    ) {
+
+        Notification notification =
+                notificationService.markAsRead(id, userId);
+
+        NotificationResponse response =
+                notificationMapper.toResponse(notification);
+
+        return ApiResponse.<NotificationResponse>builder()
+                .success(true)
+                .message("Notification marked as read")
+                .data(response)
                 .build();
     }
 }

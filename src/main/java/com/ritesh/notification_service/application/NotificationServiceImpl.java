@@ -7,7 +7,8 @@ import com.ritesh.notification_service.infrastructure.repository.NotificationRep
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import com.ritesh.notification_service.infrastructure.redis.NotificationCacheService;
-
+import com.ritesh.notification_service.common.exception.ResourceNotFoundException;
+import java.util.UUID;
 
 import java.util.List;
 
@@ -46,5 +47,29 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public List<Notification> getUserNotifications(String userId) {
         return notificationRepository.findByUserId(userId);
+    }
+
+    @Override
+    public Notification markAsRead(UUID notificationId, String userId) {
+
+        Notification notification =
+                notificationRepository
+                        .findByIdAndUserId(notificationId, userId)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Notification not found"
+                                )
+                        );
+
+        if (!notification.isRead()) {
+
+            notification.setRead(true);
+
+            notificationRepository.save(notification);
+
+            notificationCacheService.decrementUnreadCount(userId);
+        }
+
+        return notification;
     }
 }
