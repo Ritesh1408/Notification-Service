@@ -1,8 +1,8 @@
-package com.ritesh.notification_service.infrastructure.redis;
+package com.ritesh.notification_service.application.port;
 
 import java.util.List;
 
-public interface NotificationCacheService {
+public interface NotificationCache {
 
     void incrementUnreadCount(String userId);
 

@@ -1,43 +1,34 @@
 package com.ritesh.notification_service.api;
 
-import com.ritesh.notification_service.application.NotificationService;
+import com.ritesh.notification_service.api.dto.NotificationCreateRequest;
+import com.ritesh.notification_service.api.dto.NotificationResponse;
+import com.ritesh.notification_service.application.NotificationFacade;
 import com.ritesh.notification_service.common.response.ApiResponse;
-import com.ritesh.notification_service.common.util.JsonUtil;
-import com.ritesh.notification_service.domain.entity.Notification;
-import com.ritesh.notification_service.common.mapper.NotificationMapper;
-import com.ritesh.notification_service.dto.response.NotificationResponse;
-import com.ritesh.notification_service.dto.NotificationCreateRequest;
-import com.ritesh.notification_service.infrastructure.redis.NotificationCacheService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import java.util.UUID;
+
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/notifications")
 @RequiredArgsConstructor
 public class NotificationController {
 
-    private final NotificationService notificationService;
-    private final NotificationMapper notificationMapper;
-    private final NotificationCacheService notificationCacheService;
-    private final JsonUtil jsonUtil;
+    private final NotificationFacade notificationFacade;
 
-    /**
-     * Create Notification
-     */
     @PostMapping
     public ApiResponse<NotificationResponse> createNotification(
             @RequestHeader("x-user-id") String userId,
             @Valid @RequestBody NotificationCreateRequest request
     ) {
 
-        Notification notification =
-                notificationService.createNotification(userId, request);
-
         NotificationResponse response =
-                notificationMapper.toResponse(notification);
+                notificationFacade.createNotification(
+                        userId,
+                        request
+                );
 
         return ApiResponse.<NotificationResponse>builder()
                 .success(true)
@@ -46,19 +37,13 @@ public class NotificationController {
                 .build();
     }
 
-    /**
-     * Get User Notifications
-     */
     @GetMapping
     public ApiResponse<List<NotificationResponse>> getNotifications(
             @RequestHeader("x-user-id") String userId
     ) {
 
         List<NotificationResponse> responses =
-                notificationService.getUserNotifications(userId)
-                        .stream()
-                        .map(notificationMapper::toResponse)
-                        .toList();
+                notificationFacade.getUserNotifications(userId);
 
         return ApiResponse.<List<NotificationResponse>>builder()
                 .success(true)
@@ -73,31 +58,12 @@ public class NotificationController {
     ) {
 
         long unreadCount =
-                notificationCacheService.getUnreadCount(userId);
+                notificationFacade.getUnreadCount(userId);
 
         return ApiResponse.<Long>builder()
                 .success(true)
                 .message("Unread count fetched successfully")
                 .data(unreadCount)
-                .build();
-    }
-
-    @PatchMapping("/{id}/read")
-    public ApiResponse<NotificationResponse> markAsRead(
-            @PathVariable UUID id,
-            @RequestHeader("x-user-id") String userId
-    ) {
-
-        Notification notification =
-                notificationService.markAsRead(id, userId);
-
-        NotificationResponse response =
-                notificationMapper.toResponse(notification);
-
-        return ApiResponse.<NotificationResponse>builder()
-                .success(true)
-                .message("Notification marked as read")
-                .data(response)
                 .build();
     }
 
@@ -107,21 +73,28 @@ public class NotificationController {
     ) {
 
         List<NotificationResponse> responses =
-                notificationCacheService
-                        .getLatestNotifications(userId)
-                        .stream()
-                        .map(json ->
-                                jsonUtil.fromJson(
-                                        json,
-                                        NotificationResponse.class
-                                )
-                        )
-                        .toList();
+                notificationFacade.getLatestNotifications(userId);
 
         return ApiResponse.<List<NotificationResponse>>builder()
                 .success(true)
                 .message("Latest notifications fetched successfully")
                 .data(responses)
+                .build();
+    }
+
+    @PatchMapping("/{id}/read")
+    public ApiResponse<NotificationResponse> markAsRead(
+            @PathVariable UUID id,
+            @RequestHeader("x-user-id") String userId
+    ) {
+
+        NotificationResponse response =
+                notificationFacade.markAsRead(id, userId);
+
+        return ApiResponse.<NotificationResponse>builder()
+                .success(true)
+                .message("Notification marked as read")
+                .data(response)
                 .build();
     }
 }

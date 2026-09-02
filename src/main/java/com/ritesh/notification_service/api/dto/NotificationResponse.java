@@ -1,4 +1,4 @@
-package com.ritesh.notification_service.dto.response;
+package com.ritesh.notification_service.api.dto;
 
 import com.ritesh.notification_service.domain.enums.NotificationCategory;
 import com.ritesh.notification_service.domain.enums.NotificationChannel;

@@ -1,5 +1,6 @@
 package com.ritesh.notification_service.infrastructure.redis;
 
+import com.ritesh.notification_service.application.port.NotificationCache;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -7,8 +8,8 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class NotificationCacheServiceImpl
-        implements NotificationCacheService {
+public class RedisNotificationCache
+        implements NotificationCache {
 
     private static final String KEY_PREFIX = "notif:unread:";
     private static final String LATEST_PREFIX = "notif:latest:";

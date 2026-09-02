@@ -1,7 +1,7 @@
 package com.ritesh.notification_service.common.mapper;
 
 import com.ritesh.notification_service.domain.entity.Notification;
-import com.ritesh.notification_service.dto.response.NotificationResponse;
+import com.ritesh.notification_service.api.dto.NotificationResponse;
 import org.springframework.stereotype.Component;
 
 @Component
