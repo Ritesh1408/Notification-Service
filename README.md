@@ -9,6 +9,65 @@ The service handles **multi-channel notifications (Email, SMS, Push, In-App)** w
 
 The service is designed using **Clean Architecture and SOLID principles**.
 
+# HLD
+
+                              +----------------------+
+                              |   Client Services    |
+                              | Payment / Order etc. |
+                              +----------+-----------+
+                                         |
+                                         |
+                                 JWT + x-user-id
+                                         |
+                                         v
+                        +--------------------------------+
+                        |      Notification Service      |
+                        |--------------------------------|
+                        | Spring Security (JWT Filter)   |
+                        | REST Controllers               |
+                        | Application Services           |
+                        | Validation                     |
+                        | Mapper Layer                   |
+                        +---------------+----------------+
+                                        |
+                       +----------------+----------------+
+                       |                                 |
+                       v                                 v
+              +----------------+                +------------------+
+              | PostgreSQL     |                | Redis            |
+              |----------------|                |------------------|
+              | Notifications  |                | Unread Count     |
+              | Preferences    |                | Latest Feed Cache|
+              | Delivery Logs  |                | Idempotency      |
+              +----------------+                +------------------+
+                                        |
+                                        |
+                                  (Next Phase)
+                                        |
+                                        v
+                                +---------------+
+                                | Kafka Producer|
+                                +-------+-------+
+                                        |
+                          notification.events Topic
+                                        |
+                                        v
+                            +----------------------+
+                            | Notification Consumer|
+                            +----------+-----------+
+                                       |
+                   +-------------------+-------------------+
+                   |                   |                   |
+                   v                   v                   v
+            Email Worker         SMS Worker         Push Worker
+                   |                   |                   |
+                   +-------------------+-------------------+
+                                       |
+                              Delivery Engine Layer
+                                       |
+                                       v
+                             Email / SMS / Push
+
 Client services publish events or call the Notification API, which processes and dispatches notifications asynchronously through Kafka and channel workers.
 
 ```
