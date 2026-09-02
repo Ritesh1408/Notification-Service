@@ -1,8 +1,11 @@
 package com.ritesh.notification_service.application;
 
+import com.ritesh.notification_service.common.mapper.NotificationMapper;
+import com.ritesh.notification_service.common.util.JsonUtil;
 import com.ritesh.notification_service.domain.entity.Notification;
 import com.ritesh.notification_service.domain.enums.NotificationStatus;
 import com.ritesh.notification_service.dto.NotificationCreateRequest;
+import com.ritesh.notification_service.dto.response.NotificationResponse;
 import com.ritesh.notification_service.infrastructure.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,6 +21,9 @@ public class NotificationServiceImpl implements NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final NotificationCacheService notificationCacheService;
+
+    private final NotificationMapper notificationMapper;
+    private final JsonUtil jsonUtil;
 
     @Override
     public Notification createNotification(String userId, NotificationCreateRequest request) {
@@ -37,11 +43,20 @@ public class NotificationServiceImpl implements NotificationService {
         Notification savedNotification =
                 notificationRepository.save(notification);
 
+        NotificationResponse response =
+                notificationMapper.toResponse(savedNotification);
+
+        String json =
+                jsonUtil.toJson(response);
+
+        notificationCacheService.cacheLatestNotification(
+                userId,
+                json
+        );
+
         notificationCacheService.incrementUnreadCount(userId);
 
         return savedNotification;
-
-//        return notificationRepository.save(notification);
     }
 
     @Override

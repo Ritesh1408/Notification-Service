@@ -2,6 +2,7 @@ package com.ritesh.notification_service.api;
 
 import com.ritesh.notification_service.application.NotificationService;
 import com.ritesh.notification_service.common.response.ApiResponse;
+import com.ritesh.notification_service.common.util.JsonUtil;
 import com.ritesh.notification_service.domain.entity.Notification;
 import com.ritesh.notification_service.common.mapper.NotificationMapper;
 import com.ritesh.notification_service.dto.response.NotificationResponse;
@@ -21,6 +22,7 @@ public class NotificationController {
     private final NotificationService notificationService;
     private final NotificationMapper notificationMapper;
     private final NotificationCacheService notificationCacheService;
+    private final JsonUtil jsonUtil;
 
     /**
      * Create Notification
@@ -96,6 +98,30 @@ public class NotificationController {
                 .success(true)
                 .message("Notification marked as read")
                 .data(response)
+                .build();
+    }
+
+    @GetMapping("/latest")
+    public ApiResponse<List<NotificationResponse>> getLatestNotifications(
+            @RequestHeader("x-user-id") String userId
+    ) {
+
+        List<NotificationResponse> responses =
+                notificationCacheService
+                        .getLatestNotifications(userId)
+                        .stream()
+                        .map(json ->
+                                jsonUtil.fromJson(
+                                        json,
+                                        NotificationResponse.class
+                                )
+                        )
+                        .toList();
+
+        return ApiResponse.<List<NotificationResponse>>builder()
+                .success(true)
+                .message("Latest notifications fetched successfully")
+                .data(responses)
                 .build();
     }
 }
